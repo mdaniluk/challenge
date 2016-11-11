@@ -43,7 +43,7 @@ class Loader:
         self.data = []
         self.category = []
         with open(filename) as data_file:
-            counter_max = 1000
+            counter_max = 10000
             for line in data_file:
                 if (counter_max > 0):
                     current_example = json.loads(line)
