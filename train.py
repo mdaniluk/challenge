@@ -99,8 +99,8 @@ def train():
 					cnn_rnn.pad: np.zeros([len(x_batch), 1, config.embedding_size, 1]),
 					cnn_rnn.real_len: real_len(x_batch),
 				}
-                _, step, loss, accuracy = sess.run([train_op, global_step, cnn_rnn.loss, cnn_rnn.accuracy], feed_dict)
-            
+                _, step, loss, accuracy, num_correct = sess.run([train_op, global_step, cnn_rnn.loss, cnn_rnn.accuracy, cnn_rnn.num_correct], feed_dict)
+                return num_correct
             def dev_step(x_batch, y_batch):
                 feed_dict = {
 					cnn_rnn.input_x: x_batch,
@@ -119,11 +119,15 @@ def train():
             
             train_batches = batch_iter(list(zip(x_train, y_train)), config.batch_size, config.epochs)
             best_accuracy, best_at_stp = 0, 0
+            total_train_correct = 0
             for train_batch in train_batches:
                 x_train_batch, y_train_batch = zip(*train_batch)
-                train_step(x_train_batch, y_train_batch)
+                num_correct = train_step(x_train_batch, y_train_batch)
+                total_train_correct += num_correct
                 current_step = tf.train.global_step(sess, global_step)
                 
+                accuracy_train = float(num_correct) / len(y_train_batch)
+                print ("train accuracy " , accuracy_train)
                 # Evaluate the model with x_dev and y_dev
                 if current_step % config.evaluate_every == 0:
                     dev_batches = batch_iter(list(zip(x_dev, y_dev)), config.batch_size, 1)
